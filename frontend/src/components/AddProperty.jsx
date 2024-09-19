@@ -1,24 +1,27 @@
-import React, { useState } from "react";
-import { Contract, BrowserProvider } from "ethers";
+import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
-import { uploadImage } from "../utils/ipfs"; // Function for uploading image to IPFS
-import RealEstateABI from "../scdata/RealEstate.json"; // ABI of your RealEstate contract
+import { uploadImage } from "../utils/ipfs";
+import RealEstateABI from "../scdata/RealEstate.json";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const CONTRACT_ADDRESS = "0xf92BF96b18Dd721796e1A6cB2c063aD9840806fd"; // Replace with your contract address
+const CONTRACT_ADDRESS = "0xf92BF96b18Dd721796e1A6cB2c063aD9840806fd";
 
 const AddProperty = () => {
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
   const [price, setPrice] = useState("");
   const [image, setImage] = useState(null);
+  const [connectedAddress, setConnectedAddress] = useState(null);
 
   // MetaMask wallet connect function
   const connectWallet = async () => {
     if (window.ethereum) {
       try {
-        await window.ethereum.request({ method: "eth_requestAccounts" });
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+        const address = await signer.getAddress();
+        setConnectedAddress(address);
         toast.success("Connected to MetaMask");
       } catch (error) {
         toast.error("Error connecting to MetaMask");
@@ -28,7 +31,18 @@ const AddProperty = () => {
     }
   };
 
-  // Handle form input changes
+  useEffect(() => {
+    const checkConnection = async () => {
+      if (window.ethereum) {
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+        const address = await signer.getAddress();
+        if (address) setConnectedAddress(address);
+      }
+    };
+    checkConnection();
+  }, []);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     if (name === "name") setName(value);
@@ -36,12 +50,10 @@ const AddProperty = () => {
     if (name === "price") setPrice(value);
   };
 
-  // Handle image input
   const handleFileChange = (e) => {
     setImage(e.target.files[0]);
   };
 
-  // Add property function
   const addProperty = async () => {
     if (!name || !location || !price || !image) {
       toast.error("All fields are required");
@@ -49,34 +61,26 @@ const AddProperty = () => {
     }
 
     try {
-      // Connect to MetaMask
-      const provider = new BrowserProvider(window.ethereum);
+      const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
-      // const contract = new Contract(CONTRACT_ADDRESS, abi, signer);
       const contract = new ethers.Contract(
         CONTRACT_ADDRESS,
         RealEstateABI.abi,
         signer
       );
 
-
-      // Upload image to IPFS
       const imageURL = await uploadImage(image);
+      const priceInWei = ethers.parseEther(price);
 
-      // Convert price from ETH to Wei
-      const priceInWei = ethers.parseEther(price); 
-
-      // Interact with the smart contract to add the property
       const tx = await contract.addProperty(
         name,
         location,
         priceInWei,
         imageURL
       );
-      await tx.wait(); // Wait for the transaction to be mined
+      await tx.wait();
       toast.success("Property added successfully!");
 
-      // Clear the form
       setName("");
       setLocation("");
       setPrice("");
@@ -93,13 +97,14 @@ const AddProperty = () => {
         <h1 className="text-4xl font-extrabold text-center text-gray-800 mb-8">
           Add New Property
         </h1>
-
         <div className="max-w-lg mx-auto bg-white p-10 rounded-lg shadow-lg border border-gray-200">
           <button
             onClick={connectWallet}
             className="mb-6 bg-blue-600 hover:bg-blue-800 text-white font-bold py-3 px-4 rounded-full transition duration-300 shadow-md"
           >
-            Connect Wallet
+            {connectedAddress
+              ? `Connected: ${connectedAddress}`
+              : "Connect Wallet"}
           </button>
 
           <form onSubmit={(e) => e.preventDefault()}>

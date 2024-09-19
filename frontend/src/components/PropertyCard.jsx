@@ -1,7 +1,7 @@
 import React from "react";
-import { ethers } from "ethers"; // Import ethers for formatting the price
+import { ethers } from "ethers";
 
-function PropertyCard({ property }) {
+const PropertyCard = ({ property }) => {
   return (
     <div className="bg-white shadow-md rounded-lg overflow-hidden w-full max-w-sm mx-auto">
       <img
@@ -15,11 +15,11 @@ function PropertyCard({ property }) {
         </h2>
         <p className="text-gray-600 mb-4">Location: {property.location}</p>
         <p className="text-lg font-medium text-blue-600">
-          Price: {ethers.utils.formatEther(property.price)} ETH
+          Price: {property.price} ETH
         </p>
       </div>
     </div>
   );
-}
+};
 
 export default PropertyCard;
