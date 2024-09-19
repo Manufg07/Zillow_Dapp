@@ -5,13 +5,14 @@ import RealEstateABI from "../scdata/RealEstate.json";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const CONTRACT_ADDRESS = "0xf92BF96b18Dd721796e1A6cB2c063aD9840806fd";
+const CONTRACT_ADDRESS = "0xa8daeA0A229e06B2e7dc5a55F179d57EFDd68AAE";
 
 const AddProperty = () => {
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
   const [price, setPrice] = useState("");
-  const [image, setImage] = useState(null);
+  const [description, setDescription] = useState("");
+  const [images, setImages] = useState([]);
   const [connectedAddress, setConnectedAddress] = useState(null);
 
   // MetaMask wallet connect function
@@ -48,14 +49,15 @@ const AddProperty = () => {
     if (name === "name") setName(value);
     if (name === "location") setLocation(value);
     if (name === "price") setPrice(value);
+    if (name === "description") setDescription(value);
   };
 
   const handleFileChange = (e) => {
-    setImage(e.target.files[0]);
+    setImages([...e.target.files]); // Handle multiple file uploads
   };
 
   const addProperty = async () => {
-    if (!name || !location || !price || !image) {
+    if (!name || !location || !price || !description || images.length === 0) {
       toast.error("All fields are required");
       return;
     }
@@ -69,14 +71,24 @@ const AddProperty = () => {
         signer
       );
 
-      const imageURL = await uploadImage(image);
+      // Upload each image and collect URLs
+      const imageUrls = [];
+      for (let i = 0; i < images.length; i++) {
+        const imageUrl = await uploadImage(images[i]);
+        imageUrls.push(imageUrl);
+      }
+
       const priceInWei = ethers.parseEther(price);
+
+      // Join image URLs as a single string, separated by commas
+      const imageUrlString = imageUrls.join(",");
 
       const tx = await contract.addProperty(
         name,
         location,
         priceInWei,
-        imageURL
+        imageUrlString,
+        description
       );
       await tx.wait();
       toast.success("Property added successfully!");
@@ -84,7 +96,8 @@ const AddProperty = () => {
       setName("");
       setLocation("");
       setPrice("");
-      setImage(null);
+      setDescription("");
+      setImages([]);
     } catch (error) {
       console.error("Error adding property:", error);
       toast.error("Error adding property");
@@ -169,16 +182,35 @@ const AddProperty = () => {
               <div>
                 <label
                   className="block text-lg font-medium mb-2 text-gray-600"
-                  htmlFor="image"
+                  htmlFor="description"
                 >
-                  Property Image *
+                  Property Description *
+                </label>
+                <textarea
+                  name="description"
+                  id="description"
+                  placeholder="Description"
+                  value={description}
+                  onChange={handleInputChange}
+                  className="w-full border-2 border-gray-300 rounded-md p-2"
+                  required
+                />
+              </div>
+
+              <div>
+                <label
+                  className="block text-lg font-medium mb-2 text-gray-600"
+                  htmlFor="images"
+                >
+                  Property Images *
                 </label>
                 <input
                   type="file"
-                  name="image"
-                  id="image"
+                  name="images"
+                  id="images"
                   onChange={handleFileChange}
                   className="w-full border-2 border-gray-300 rounded-md p-2"
+                  multiple
                   required
                 />
               </div>

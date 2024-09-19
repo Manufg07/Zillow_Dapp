@@ -1,59 +1,75 @@
 import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
-import RealEstateABI from "../scdata/RealEstate.json";
+import RealEstateABI from "../scdata/RealEstate.json"; // Import your contract ABI
 import PropertyCard from "./PropertyCard";
 
-const CONTRACT_ADDRESS = "0xf92BF96b18Dd721796e1A6cB2c063aD9840806fd";
+const CONTRACT_ADDRESS = "0xa8daeA0A229e06B2e7dc5a55F179d57EFDd68AAE";
 
 const PropertyList = () => {
   const [properties, setProperties] = useState([]);
+  const [connectedAddress, setConnectedAddress] = useState(null);
 
-  useEffect(() => {
-    const fetchProperties = async () => {
+  // MetaMask wallet connect function
+  const connectWallet = async () => {
+    if (window.ethereum) {
       try {
         const provider = new ethers.BrowserProvider(window.ethereum);
-        const contract = new ethers.Contract(
-          CONTRACT_ADDRESS,
-          RealEstateABI.abi,
-          provider
-        );
-
-        const propertyCount = await contract.propertyCounter();
-        const propertyList = [];
-
-        for (let i = 1; i <= propertyCount; i++) {
-          const property = await contract.properties(i);
-          propertyList.push({
-            id: i,
-            name: property.name,
-            location: property.location,
-            price: ethers.formatEther(property.price.toString()),
-            imageUrl: property.imageURL,
-            forSale: property.forSale,
-          });
-        }
-
-        setProperties(propertyList);
+        const signer = await provider.getSigner();
+        const address = await signer.getAddress();
+        setConnectedAddress(address);
       } catch (error) {
-        console.error("Error fetching properties:", error);
+        console.error("Error connecting to MetaMask", error);
       }
-    };
+    }
+  };
 
+  // Function to fetch all properties from the smart contract
+  const fetchProperties = async () => {
+    try {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const contract = new ethers.Contract(
+        CONTRACT_ADDRESS,
+        RealEstateABI.abi,
+        provider
+      );
+
+      const propertyCount = await contract.propertyCount();
+      const properties = [];
+
+      for (let i = 1; i <= propertyCount; i++) {
+        const property = await contract.getProperty(i);
+        properties.push({
+          id: i,
+          name: property[0],
+          location: property[1],
+          price: ethers.formatEther(property[2]),
+          imageUrls: property[3],
+          description: property[4],
+          owner: property[5],
+          isAvailable: property[6],
+        });
+      }
+
+      setProperties(properties);
+    } catch (error) {
+      console.error("Error fetching properties:", error);
+    }
+  };
+
+  useEffect(() => {
+    connectWallet();
     fetchProperties();
   }, []);
 
   return (
-    <div className="container mx-auto p-8">
-      <h2 className="text-3xl font-bold text-center my-8">Property List</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-        {properties.length === 0 ? (
-          <p>No properties found.</p>
-        ) : (
-          properties.map((property) => (
-            <PropertyCard key={property.id} property={property} />
-          ))
-        )}
-      </div>
+    <div className="property-list grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {properties.map((property) => (
+        <PropertyCard
+          key={property.id}
+          property={property}
+          connectedAddress={connectedAddress}
+        />
+      ))}
     </div>
   );
 };
