@@ -6,7 +6,7 @@ contract RealEstate {
         string name;
         string location;
         uint256 price;
-        string imageUrls;  
+        string imageURL;  
         string description; 
         address payable owner;
         bool isAvailable;
@@ -35,7 +35,7 @@ contract RealEstate {
         string name,
         string location,
         uint256 price,
-        string imageUrls,
+        string imageURL,
         string description,
         address owner
     );
@@ -49,7 +49,7 @@ contract RealEstate {
         string memory _name,
         string memory _location,
         uint256 _price,
-        string memory _imageUrls,  
+        string memory _imageURL,  
         string memory _description
     ) public {
         require(bytes(_name).length > 0, "Name required");
@@ -62,13 +62,13 @@ contract RealEstate {
             _name,
             _location,
             _price,
-            _imageUrls,  
+            _imageURL,  
             _description, 
             payable(msg.sender),
             true
         );
 
-        emit PropertyAdded(propertyCount, _name, _location, _price, _imageUrls, _description, msg.sender);
+        emit PropertyAdded(propertyCount, _name, _location, _price, _imageURL, _description, msg.sender);
     }
 
     // Function to view property details
@@ -90,7 +90,7 @@ contract RealEstate {
             property.name,
             property.location,
             property.price,
-            property.imageUrls,  
+            property.imageURL,  
             property.description, 
             property.owner,
             property.isAvailable
@@ -134,14 +134,14 @@ contract RealEstate {
         string memory _name,
         string memory _location,
         uint256 _price,
-        string memory _imageUrls, 
+        string memory _imageURL, 
         string memory _description 
     ) public onlyAdmin {
         Property storage property = properties[_propertyId];
         property.name = _name;
         property.location = _location;
         property.price = _price;
-        property.imageUrls = _imageUrls; 
+        property.imageURL = _imageURL; 
         property.description = _description; 
 
         emit PropertyModified(_propertyId);

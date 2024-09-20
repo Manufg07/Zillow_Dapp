@@ -2,12 +2,11 @@ import React from "react";
 import { ethers } from "ethers";
 import RealEstateABI from "../scdata/RealEstate.json"; // Import your contract ABI
 
-const CONTRACT_ADDRESS = "0xa8daeA0A229e06B2e7dc5a55F179d57EFDd68AAE"; // Replace with your contract address
+const CONTRACT_ADDRESS = "0x3C6CEFb4a188697F04aeE25699c3E8DD8EA92Ccb"; // Replace with your contract address
 
 const PropertyCard = ({ property, connectedAddress }) => {
+ 
   // Function to buy the property
-  const gatewayUrl = import.meta.env.VITE_IPFS_GATEWAY;
-
   const buyProperty = async (propertyId, price) => {
     if (!window.ethereum) {
       alert("MetaMask is required to perform this action.");
@@ -69,45 +68,51 @@ const PropertyCard = ({ property, connectedAddress }) => {
   };
 
   return (
-    <div className="property-card border p-4 m-4 rounded-lg">
-      <h3 className="font-bold">{property.name}</h3>
-      <p>Location: {property.location}</p>
-      <p>Price: {property.price} ETH</p>
-      <p>Description: {property.description}</p>
-      <p>Owner: {property.owner}</p>
+    <div className="bg-white shadow-md rounded-lg overflow-hidden w-full max-w-sm mx-auto">
       <img
-        src={`https://ipfs.io/ipfs/${property.imageUrls}`}
+        src={property.imageUrl}
         alt={property.name}
-        className="w-full h-48"
+        className="w-full h-48 object-cover"
       />
+      <div className="p-6">
+        <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+          {property.name}
+        </h2>
+        <p className="text-gray-600 mb-4">Location: {property.location}</p>
+        <p className="text-lg font-medium text-blue-600">
+          Price: {property.price} ETH
+        </p>
+        <p className="text-gray-600 mb-4">
+          Description: {property.description}
+        </p>
 
-      {property.isAvailable && (
-        <>
-          <button
-            onClick={() => buyProperty(property.id, property.price)}
-            className="bg-green-500 text-white p-2 mt-4 rounded"
-          >
-            Buy Property
-          </button>
-        </>
-      )}
-
-      {connectedAddress === property.owner && (
-        <>
-          <input
-            type="number"
-            placeholder="New Price (ETH)"
-            onChange={(e) => listPropertyForSale(property.id, e.target.value)}
-            className="mt-4"
-          />
-          <button
-            onClick={() => listPropertyForSale(property.id, property.price)}
-            className="bg-blue-500 text-white p-2 mt-4 rounded"
-          >
-            List Property For Sale
-          </button>
-        </>
-      )}
+        {property.isAvailable && (
+          <>
+            <button
+              onClick={() => buyProperty(property.id, property.price)}
+              className="bg-green-500 text-white p-2 mt-4 rounded"
+            >
+              Buy Property
+            </button>
+          </>
+        )}
+        {connectedAddress === property.owner && (
+          <>
+            <input
+              type="number"
+              placeholder="New Price (ETH)"
+              onChange={(e) => listPropertyForSale(property.id, e.target.value)}
+              className="mt-4"
+            />
+            <button
+              onClick={() => listPropertyForSale(property.id, property.price)}
+              className="bg-blue-500 text-white p-2 mt-4 rounded"
+            >
+              List Property For Sale
+            </button>
+          </>
+        )}
+      </div>
     </div>
   );
 };

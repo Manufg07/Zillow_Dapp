@@ -13,7 +13,6 @@
     "hardhat": "^2.22.10"
   },
   "dependencies": {
-    "cors": "^2.8.5",
     "dotenv": "^16.4.5"
   }
 }

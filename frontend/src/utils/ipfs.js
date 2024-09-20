@@ -10,8 +10,8 @@ export async function uploadImage(file) {
   const formData = new FormData();
   formData.append("file", file);
 
-  console.log("API Key:", pinataApiKey); 
-  console.log("API Secret:", pinataSecretApiKey); 
+  console.log("API Key:", pinataApiKey);
+  console.log("API Secret:", pinataSecretApiKey);
 
   try {
     const res = await axios.post(pinataBaseUrl, formData, {

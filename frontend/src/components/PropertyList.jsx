@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import RealEstateABI from "../scdata/RealEstate.json"; // Import your contract ABI
 import PropertyCard from "./PropertyCard";
 
-const CONTRACT_ADDRESS = "0xa8daeA0A229e06B2e7dc5a55F179d57EFDd68AAE";
+const CONTRACT_ADDRESS = "0x3C6CEFb4a188697F04aeE25699c3E8DD8EA92Ccb";
 
 const PropertyList = () => {
   const [properties, setProperties] = useState([]);

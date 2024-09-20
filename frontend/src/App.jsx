@@ -9,6 +9,9 @@ function App() {
 
   // Function to connect MetaMask wallet
   const connectWallet = async () => {
+    if (isConnecting) return; // Prevent multiple requests
+    setIsConnecting(true); // Set flag to true when starting connection
+
     if (window.ethereum) {
       try {
         const accounts = await window.ethereum.request({
