@@ -1,48 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { ethers } from "ethers";
 import { uploadImage } from "../utils/ipfs";
 import RealEstateABI from "../scdata/RealEstate.json";
 import { toast } from "react-toastify";
+import { motion } from "framer-motion"; // Import framer-motion for animations
 import "react-toastify/dist/ReactToastify.css";
 
 const CONTRACT_ADDRESS = "0x3C6CEFb4a188697F04aeE25699c3E8DD8EA92Ccb";
 
-const AddProperty = () => {
+const AddProperty = ({ closeModal }) => {
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
   const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState(null);
-  const [connectedAddress, setConnectedAddress] = useState(null);
-
-  // MetaMask wallet connect function
-  const connectWallet = async () => {
-    if (window.ethereum) {
-      try {
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const signer = await provider.getSigner();
-        const address = await signer.getAddress();
-        setConnectedAddress(address);
-        toast.success("Connected to MetaMask");
-      } catch (error) {
-        toast.error("Error connecting to MetaMask");
-      }
-    } else {
-      toast.error("MetaMask not detected");
-    }
-  };
-
-  useEffect(() => {
-    const checkConnection = async () => {
-      if (window.ethereum) {
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const signer = await provider.getSigner();
-        const address = await signer.getAddress();
-        if (address) setConnectedAddress(address);
-      }
-    };
-    checkConnection();
-  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -72,11 +43,7 @@ const AddProperty = () => {
       );
 
       const imageURL = await uploadImage(image);
-
       const priceInWei = ethers.parseEther(price);
-
-      // // Join image URLs as a single string, separated by commas
-      // const imageUrlString = imageUrls.join(",");
 
       const tx = await contract.addProperty(
         name,
@@ -86,13 +53,17 @@ const AddProperty = () => {
         description
       );
       await tx.wait();
+
       toast.success("Property added successfully!");
 
+      // Clear form
       setName("");
       setLocation("");
       setPrice("");
       setDescription("");
       setImage(null);
+
+      closeModal(); // Close modal on success
     } catch (error) {
       console.error("Error adding property:", error);
       toast.error("Error adding property");
@@ -100,127 +71,107 @@ const AddProperty = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <div className="container mx-auto p-8">
-        <h1 className="text-4xl font-extrabold text-center text-gray-800 mb-8">
+    <motion.div
+      className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
+      <motion.div
+        className="bg-white rounded-lg p-8 w-full max-w-md"
+        initial={{ scale: 0.8 }}
+        animate={{ scale: 1 }}
+        transition={{ duration: 0.3 }}
+      >
+        <h2 className="text-2xl font-bold mb-4 text-gray-800">
           Add New Property
-        </h1>
-        <div className="max-w-lg mx-auto bg-white p-10 rounded-lg shadow-lg border border-gray-200">
-          <button
-            onClick={connectWallet}
-            className="mb-6 bg-blue-600 hover:bg-blue-800 text-white font-bold py-3 px-4 rounded-full transition duration-300 shadow-md"
-          >
-            {connectedAddress
-              ? `Connected: ${connectedAddress}`
-              : "Connect Wallet"}
-          </button>
-
-          <form onSubmit={(e) => e.preventDefault()}>
-            <div className="space-y-6">
-              <div>
-                <label
-                  className="block text-lg font-medium mb-2 text-gray-600"
-                  htmlFor="name"
-                >
-                  Property Name *
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  id="name"
-                  placeholder="Property Name"
-                  value={name}
-                  onChange={handleInputChange}
-                  className="w-full border-2 border-gray-300 rounded-md p-2"
-                  required
-                />
-              </div>
-
-              <div>
-                <label
-                  className="block text-lg font-medium mb-2 text-gray-600"
-                  htmlFor="location"
-                >
-                  Location *
-                </label>
-                <input
-                  type="text"
-                  name="location"
-                  id="location"
-                  placeholder="Location"
-                  value={location}
-                  onChange={handleInputChange}
-                  className="w-full border-2 border-gray-300 rounded-md p-2"
-                  required
-                />
-              </div>
-
-              <div>
-                <label
-                  className="block text-lg font-medium mb-2 text-gray-600"
-                  htmlFor="price"
-                >
-                  Price (in ETH) *
-                </label>
-                <input
-                  type="text"
-                  name="price"
-                  id="price"
-                  placeholder="Price (in ETH)"
-                  value={price}
-                  onChange={handleInputChange}
-                  className="w-full border-2 border-gray-300 rounded-md p-2"
-                  required
-                />
-              </div>
-
-              <div>
-                <label
-                  className="block text-lg font-medium mb-2 text-gray-600"
-                  htmlFor="description"
-                >
-                  Property Description *
-                </label>
-                <textarea
-                  name="description"
-                  id="description"
-                  placeholder="Description"
-                  value={description}
-                  onChange={handleInputChange}
-                  className="w-full border-2 border-gray-300 rounded-md p-2"
-                  required
-                />
-              </div>
-
-              <div>
-                <label
-                  className="block text-lg font-medium mb-2 text-gray-600"
-                  htmlFor="image"
-                >
-                  Property Image *
-                </label>
-                <input
-                  type="file"
-                  name="image"
-                  id="image"
-                  onChange={handleFileChange}
-                  className="w-full border-2 border-gray-300 rounded-md p-2"
-                  required
-                />
-              </div>
-
-              <button
-                type="button"
-                onClick={addProperty}
-                className="w-full bg-green-600 hover:bg-green-800 text-white font-bold py-3 px-4 rounded-full transition duration-300 shadow-md"
-              >
-                Add Property
-              </button>
+        </h2>
+        <form onSubmit={(e) => e.preventDefault()}>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-lg mb-1 text-gray-600">
+                Property Name *
+              </label>
+              <input
+                type="text"
+                name="name"
+                placeholder="Property Name"
+                value={name}
+                onChange={handleInputChange}
+                className="w-full border-2 border-gray-300 rounded-md p-2"
+                required
+              />
             </div>
-          </form>
-        </div>
-      </div>
-    </div>
+            <div>
+              <label className="block text-lg mb-1 text-gray-600">
+                Location *
+              </label>
+              <input
+                type="text"
+                name="location"
+                placeholder="Location"
+                value={location}
+                onChange={handleInputChange}
+                className="w-full border-2 border-gray-300 rounded-md p-2"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-lg mb-1 text-gray-600">
+                Price (in ETH) *
+              </label>
+              <input
+                type="text"
+                name="price"
+                placeholder="Price (in ETH)"
+                value={price}
+                onChange={handleInputChange}
+                className="w-full border-2 border-gray-300 rounded-md p-2"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-lg mb-1 text-gray-600">
+                Property Description *
+              </label>
+              <textarea
+                name="description"
+                placeholder="Description"
+                value={description}
+                onChange={handleInputChange}
+                className="w-full border-2 border-gray-300 rounded-md p-2"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-lg mb-1 text-gray-600">
+                Property Image *
+              </label>
+              <input
+                type="file"
+                onChange={handleFileChange}
+                className="w-full border-2 border-gray-300 rounded-md p-2"
+                required
+              />
+            </div>
+          </div>
+          <div className="flex justify-end space-x-4 mt-6">
+            <button
+              onClick={closeModal}
+              className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md transition duration-300"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={addProperty}
+              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition duration-300"
+            >
+              Add Property
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </motion.div>
   );
 };
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
-import RealEstateABI from "../scdata/RealEstate.json"; // Import your contract ABI
+import RealEstateABI from "../scdata/RealEstate.json";
 import PropertyCard from "./PropertyCard";
 
 const CONTRACT_ADDRESS = "0x3C6CEFb4a188697F04aeE25699c3E8DD8EA92Ccb";
@@ -8,6 +8,8 @@ const CONTRACT_ADDRESS = "0x3C6CEFb4a188697F04aeE25699c3E8DD8EA92Ccb";
 const PropertyList = () => {
   const [properties, setProperties] = useState([]);
   const [connectedAddress, setConnectedAddress] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // MetaMask wallet connect function
   const connectWallet = async () => {
@@ -17,9 +19,13 @@ const PropertyList = () => {
         const signer = await provider.getSigner();
         const address = await signer.getAddress();
         setConnectedAddress(address);
+        console.log("Connected to wallet:", address);
       } catch (error) {
-        console.error("Error connecting to MetaMask", error);
+        setError("Error connecting to MetaMask. Please try again.");
+        console.error("Error connecting to MetaMask:", error);
       }
+    } else {
+      setError("MetaMask is not installed. Please install it to proceed.");
     }
   };
 
@@ -51,8 +57,11 @@ const PropertyList = () => {
       }
 
       setProperties(properties);
+      setLoading(false);
     } catch (error) {
+      setError("Error fetching properties. Please try again later.");
       console.error("Error fetching properties:", error);
+      setLoading(false);
     }
   };
 
@@ -61,15 +70,37 @@ const PropertyList = () => {
     fetchProperties();
   }, []);
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-gray-700 text-xl">Loading properties...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-red-500 text-lg">{error}</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="property-list grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      {properties.map((property) => (
-        <PropertyCard
-          key={property.id}
-          property={property}
-          connectedAddress={connectedAddress}
-        />
-      ))}
+    <div className="property-list px-4 py-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {properties.length > 0 ? (
+        properties.map((property) => (
+          <PropertyCard
+            key={property.id}
+            property={property}
+            connectedAddress={connectedAddress}
+          />
+        ))
+      ) : (
+        <div className="col-span-full text-center text-gray-700 text-xl">
+          No properties available at the moment.
+        </div>
+      )}
     </div>
   );
 };
