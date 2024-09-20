@@ -70,7 +70,7 @@ const PropertyCard = ({ property, connectedAddress }) => {
   return (
     <div className="bg-white shadow-md rounded-lg overflow-hidden w-full max-w-sm mx-auto">
       <img
-        src={property.imageUrl}
+        src={property.imageURL}
         alt={property.name}
         className="w-full h-48 object-cover"
       />
@@ -85,7 +85,7 @@ const PropertyCard = ({ property, connectedAddress }) => {
         <p className="text-gray-600 mb-4">
           Description: {property.description}
         </p>
-
+        <p className="text-gray-600 mb-4">Owner: {property.owner}</p>
         {property.isAvailable && (
           <>
             <button

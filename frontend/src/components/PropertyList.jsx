@@ -43,7 +43,7 @@ const PropertyList = () => {
           name: property[0],
           location: property[1],
           price: ethers.formatEther(property[2]),
-          imageUrls: property[3],
+          imageURL: property[3],
           description: property[4],
           owner: property[5],
           isAvailable: property[6],
