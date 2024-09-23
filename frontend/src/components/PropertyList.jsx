@@ -66,7 +66,7 @@ const PropertyList = () => {
   };
 
   useEffect(() => {
-    connectWallet();
+    // connectWallet();
     fetchProperties();
   }, []);
 

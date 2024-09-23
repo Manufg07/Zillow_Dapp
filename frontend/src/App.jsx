@@ -87,7 +87,7 @@ function App() {
         )}
       </div>
 
-      {/* Property List should always show */}
+      {/* Property List should always show  */}
       <motion.div
         className="text-center"
         initial={{ opacity: 0 }}
