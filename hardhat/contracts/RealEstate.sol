@@ -20,16 +20,13 @@ contract RealEstate {
         admin = msg.sender;
     }
 
-    modifier onlyAdmin() {
-        require(msg.sender == admin, "Only admin can perform this action");
-        _;
-    }
-
+    // Modifier to ensure only the owner can modify property details
     modifier onlyOwner(uint256 _propertyId) {
         require(properties[_propertyId].owner == msg.sender, "Only owner can modify property");
         _;
     }
 
+    // Events to log actions
     event PropertyAdded(
         uint256 propertyId,
         string name,
@@ -45,6 +42,7 @@ contract RealEstate {
     event PropertyRemovedFromSale(uint256 propertyId);
     event PropertyModified(uint256 propertyId);
 
+    // Function to add a new property
     function addProperty(
         string memory _name,
         string memory _location,
@@ -105,13 +103,13 @@ contract RealEstate {
         require(msg.sender != property.owner, "Owner cannot buy their own property");
 
         property.owner.transfer(msg.value); // Transfer Ether to the current owner
-        property.owner = payable(msg.sender);
-        property.isAvailable = false;
+        property.owner = payable(msg.sender); // Assign new owner
+        property.isAvailable = false; // Mark property as sold
 
         emit PropertyBought(_propertyId, msg.sender);
     }
 
-    // Function to list property for sale
+    // Function to list property for sale (owner-only)
     function listPropertyForSale(uint256 _propertyId, uint256 _price) public onlyOwner(_propertyId) {
         Property storage property = properties[_propertyId];
         property.price = _price;
@@ -120,7 +118,7 @@ contract RealEstate {
         emit PropertyListedForSale(_propertyId, _price);
     }
 
-    // Function to remove property from sale
+    // Function to remove property from sale (owner-only)
     function removePropertyFromSale(uint256 _propertyId) public onlyOwner(_propertyId) {
         Property storage property = properties[_propertyId];
         property.isAvailable = false;
@@ -128,7 +126,7 @@ contract RealEstate {
         emit PropertyRemovedFromSale(_propertyId);
     }
 
-    // Admin function to modify property details
+    // Owner function to modify property details (onlyOwner modifier used here)
     function modifyPropertyDetails(
         uint256 _propertyId,
         string memory _name,
@@ -136,7 +134,7 @@ contract RealEstate {
         uint256 _price,
         string memory _imageURL, 
         string memory _description 
-    ) public onlyAdmin {
+    ) public onlyOwner(_propertyId) {
         Property storage property = properties[_propertyId];
         property.name = _name;
         property.location = _location;

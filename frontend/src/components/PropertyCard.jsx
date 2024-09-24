@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import { ethers } from "ethers";
 import RealEstateABI from "../scdata/RealEstate.json";
 
-const CONTRACT_ADDRESS = "0x3C6CEFb4a188697F04aeE25699c3E8DD8EA92Ccb";
+const CONTRACT_ADDRESS = "0xC6E9963CB77b5285F3A24Ecc14C566a2c19eF022";
 
 const PropertyCard = ({ property, connectedAddress, isAdmin }) => {
   const [newPrice, setNewPrice] = useState("");
-  const [editMode, setEditMode] = useState(false); // State to handle edit mode
+  const [editMode, setEditMode] = useState(false);
   const [modifiedDetails, setModifiedDetails] = useState({
     name: property.name,
     location: property.location,
@@ -15,9 +15,99 @@ const PropertyCard = ({ property, connectedAddress, isAdmin }) => {
     description: property.description,
   });
 
+  // Handle input change for editing property details
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setModifiedDetails({ ...modifiedDetails, [name]: value });
+  };
+
+  // Function to buy property
+  const buyProperty = async (propertyId, price) => {
+    if (!window.ethereum) {
+      alert("MetaMask is required to perform this action.");
+      return;
+    }
+
+    try {
+      await window.ethereum.request({ method: "eth_requestAccounts" });
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const contract = new ethers.Contract(
+        CONTRACT_ADDRESS,
+        RealEstateABI.abi,
+        signer
+      );
+
+      const tx = await contract.buyProperty(propertyId, {
+        value: ethers.parseEther(price.toString()), // Make sure to handle BigNumber
+      });
+      await tx.wait();
+      alert("Property bought successfully!");
+    } catch (error) {
+      console.error("Error buying property:", error);
+      alert("Failed to buy the property. Please try again.");
+    }
+  };
+
+  // Function to list property for sale
+  const listPropertyForSale = async (propertyId, price) => {
+    if (!window.ethereum) {
+      alert("MetaMask is required to perform this action.");
+      return;
+    }
+
+    if (!price || price <= 0) {
+      alert("Please enter a valid price.");
+      return;
+    }
+
+    try {
+      await window.ethereum.request({ method: "eth_requestAccounts" });
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const contract = new ethers.Contract(
+        CONTRACT_ADDRESS,
+        RealEstateABI.abi,
+        signer
+      );
+
+      const tx = await contract.listPropertyForSale(
+        propertyId,
+        ethers.parseEther(price.toString())
+      );
+      await tx.wait();
+      alert("Property listed for sale successfully!");
+      setNewPrice(""); // Reset the price input field after successful listing
+    } catch (error) {
+      console.error("Error listing property for sale:", error);
+      alert("Failed to list the property for sale. Please try again.");
+    }
+  };
+
+  // Function to remove property from sale
+  const removePropertyFromSale = async (propertyId) => {
+    if (!window.ethereum) {
+      alert("MetaMask is required to perform this action.");
+      return;
+    }
+
+    try {
+      await window.ethereum.request({ method: "eth_requestAccounts" });
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const contract = new ethers.Contract(
+        CONTRACT_ADDRESS,
+        RealEstateABI.abi,
+        signer
+      );
+
+      const tx = await contract.removePropertyFromSale(propertyId);
+      await tx.wait();
+      alert("Property removed from sale successfully!");
+    } catch (error) {
+      console.error("Error removing property from sale:", error);
+      alert("Failed to remove the property from sale. Please try again.");
+    }
   };
 
   // Function to modify property details (admin only)
@@ -41,7 +131,7 @@ const PropertyCard = ({ property, connectedAddress, isAdmin }) => {
         propertyId,
         modifiedDetails.name,
         modifiedDetails.location,
-        ethers.parseEther(modifiedDetails.price.toString()), // Converting price to Wei
+        ethers.parseEther(modifiedDetails.price.toString()), // Convert price to Wei
         modifiedDetails.imageURL,
         modifiedDetails.description
       );
@@ -156,6 +246,12 @@ const PropertyCard = ({ property, connectedAddress, isAdmin }) => {
                 >
                   List Property For Sale
                 </button>
+                <button
+                  onClick={() => removePropertyFromSale(property.id)}
+                  className="w-full mt-2 bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-600 transition-colors"
+                >
+                  Remove From Sale
+                </button>
               </div>
             )}
 
@@ -164,7 +260,7 @@ const PropertyCard = ({ property, connectedAddress, isAdmin }) => {
                 onClick={() => setEditMode(true)}
                 className="w-full mt-4 bg-yellow-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-yellow-600 transition-colors"
               >
-                Modify Property
+                Edit Property
               </button>
             )}
           </>

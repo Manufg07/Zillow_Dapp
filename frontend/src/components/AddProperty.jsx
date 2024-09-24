@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import { motion } from "framer-motion"; // Import framer-motion for animations
 import "react-toastify/dist/ReactToastify.css";
 
-const CONTRACT_ADDRESS = "0x3C6CEFb4a188697F04aeE25699c3E8DD8EA92Ccb";
+const CONTRACT_ADDRESS = "0xC6E9963CB77b5285F3A24Ecc14C566a2c19eF022";
 
 const AddProperty = ({ closeModal }) => {
   const [name, setName] = useState("");

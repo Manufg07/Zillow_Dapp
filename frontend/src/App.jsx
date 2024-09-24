@@ -1,121 +1,50 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import PropertyList from "./components/PropertyList";
-import AddProperty from "./components/AddProperty";
-import { ethers } from "ethers";
-import { motion } from "framer-motion";
 
-function App() {
-  const [isConnected, setIsConnected] = useState(false);
-  const [account, setAccount] = useState("");
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [showModal, setShowModal] = useState(false);
+const App = () => {
+  const [connectedAddress, setConnectedAddress] = useState("");
 
-  // Function to connect MetaMask wallet
+  // Connect wallet function
   const connectWallet = async () => {
-    if (isConnecting) return;
-    setIsConnecting(true);
+    if (!window.ethereum) {
+      alert("MetaMask is required to perform this action.");
+      return;
+    }
 
-    if (window.ethereum) {
-      try {
-        const accounts = await window.ethereum.request({
-          method: "eth_requestAccounts",
-        });
-        setAccount(accounts[0]);
-        setIsConnected(true);
-      } catch (error) {
-        console.error("Error connecting to MetaMask:", error);
-      } finally {
-        setIsConnecting(false);
-      }
-    } else {
-      alert("MetaMask is not installed. Please install MetaMask to continue.");
+    try {
+      await window.ethereum.request({ method: "eth_requestAccounts" });
+      const accounts = await window.ethereum.request({
+        method: "eth_accounts",
+      });
+      setConnectedAddress(accounts[0]);
+    } catch (error) {
+      console.error("Error connecting wallet:", error);
+      alert("Failed to connect the wallet. Please try again.");
     }
   };
 
-  useEffect(() => {
-    const checkConnection = async () => {
-      if (window.ethereum) {
-        const accounts = await window.ethereum.request({
-          method: "eth_accounts",
-        });
-        if (accounts.length > 0) {
-          setAccount(accounts[0]);
-          setIsConnected(true);
-        }
-      }
-    };
-    checkConnection();
-  }, []);
-
   return (
-    <div className="min-h-screen bg-gradient-to-r from-[#010504] to-[#232b28] flex flex-col items-center justify-center py-8 px-4">
-      <motion.h1
-        className="text-5xl font-extrabold text-center mb-12 text-[#2c67c7] drop-shadow-lg"
-        initial={{ opacity: 0, y: -50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        Real Estate DApp
-      </motion.h1>
+    <div className="min-h-screen bg-gray-100 p-8">
+      <header className="flex justify-between items-center mb-8">
+        <h1 className="text-4xl font-bold text-gray-900">
+          Real Estate Marketplace
+        </h1>
+        <button
+          onClick={connectWallet}
+          className="bg-[#0D9488] text-white font-bold py-2 px-4 rounded-lg hover:bg-[#0F766E] transition-colors"
+        >
+          {connectedAddress
+            ? `Connected: ${connectedAddress.slice(
+                0,
+                6
+              )}...${connectedAddress.slice(-4)}`
+            : "Connect Wallet"}
+        </button>
+      </header>
 
-      {/* Connect Wallet Button */}
-      <div className="flex justify-center my-8">
-        {!isConnected && (
-          <motion.button
-            onClick={connectWallet}
-            className="bg-[#0D9488] hover:bg-[#0F766E] text-white font-bold py-3 px-8 rounded-full shadow-md transition-all duration-300 ease-in-out transform hover:scale-105"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-          >
-            Connect Wallet
-          </motion.button>
-        )}
-        {isConnected && (
-          <motion.div
-            className="text-center bg-white p-4 rounded-lg shadow-lg"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            <p className="text-lg font-semibold text-[#1E293B]">
-              Connected: {account}
-            </p>
-          </motion.div>
-        )}
-      </div>
-
-      {/* Property List should always show  */}
-      <motion.div
-        className="text-center"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.4 }}
-      >
-        {/* Property list component always visible */}
-        <PropertyList />
-
-        {/* Show "Add Property" button only when MetaMask is connected */}
-        {isConnected ? (
-          <button
-            className="bg-[#0D9488] hover:bg-[#0F766E] text-white font-bold py-3 px-6 mt-8 rounded-full shadow-md transition-all duration-300 ease-in-out transform hover:scale-105"
-            onClick={() => setShowModal(true)}
-          >
-            Add Property
-          </button>
-        ) : (
-          <p className="text-gray-300 mt-8">
-            Please connect your wallet to add properties or perform any actions.
-          </p>
-        )}
-
-        {/* Modal for Adding Property */}
-        {showModal && <AddProperty closeModal={() => setShowModal(false)} />}
-      </motion.div>
+      <PropertyList connectedAddress={connectedAddress} />
     </div>
   );
-}
+};
 
 export default App;

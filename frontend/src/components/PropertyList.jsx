@@ -3,34 +3,71 @@ import { ethers } from "ethers";
 import RealEstateABI from "../scdata/RealEstate.json";
 import PropertyCard from "./PropertyCard";
 
-const CONTRACT_ADDRESS = "0x3C6CEFb4a188697F04aeE25699c3E8DD8EA92Ccb";
+const CONTRACT_ADDRESS = "0xC6E9963CB77b5285F3A24Ecc14C566a2c19eF022";
 
-const PropertyList = () => {
+const PropertyList = ({ connectedAddress }) => {
   const [properties, setProperties] = useState([]);
-  const [connectedAddress, setConnectedAddress] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  // MetaMask wallet connect function
-  const connectWallet = async () => {
-    if (window.ethereum) {
-      try {
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const signer = await provider.getSigner();
-        const address = await signer.getAddress();
-        setConnectedAddress(address);
-        console.log("Connected to wallet:", address);
-      } catch (error) {
-        setError("Error connecting to MetaMask. Please try again.");
-        console.error("Error connecting to MetaMask:", error);
-      }
-    } else {
-      setError("MetaMask is not installed. Please install it to proceed.");
+  useEffect(() => {
+    fetchProperties();
+    checkIfAdmin();
+  }, []);
+
+  // Fetch all properties from the contract
+ const fetchProperties = async () => {
+   if (!window.ethereum) {
+     console.error("MetaMask not detected");
+     return;
+   }
+
+   try {
+     console.log("Connecting to provider...");
+     const provider = new ethers.BrowserProvider(window.ethereum);
+     const contract = new ethers.Contract(
+       CONTRACT_ADDRESS,
+       RealEstateABI.abi,
+       provider
+     );
+
+     const propertyCount = await contract.propertyCount();
+     console.log(`Property count: ${propertyCount}`);
+
+     const allProperties = [];
+
+     for (let i = 1; i <= propertyCount; i++) {
+       const propertyArray = await contract.getProperty(i);
+       console.log(`Property ${i}:`, propertyArray);
+
+       // Unpack array into a structured object
+       const property = {
+         id: i,
+         name: propertyArray[0],
+         location: propertyArray[1],
+         price: ethers.formatEther(propertyArray[2]),
+         imageURL: propertyArray[3],
+         description: propertyArray[4],
+         owner: propertyArray[5],
+         isAvailable: propertyArray[6],
+       };
+
+       allProperties.push(property);
+     }
+
+     console.log("All properties:", allProperties);
+     setProperties(allProperties);
+   } catch (error) {
+     console.error("Error fetching properties:", error);
+   }
+ };
+
+  // Check if the connected address is the admin
+  const checkIfAdmin = async () => {
+    if (!window.ethereum) {
+      console.error("MetaMask not detected");
+      return;
     }
-  };
 
-  // Function to fetch all properties from the smart contract
-  const fetchProperties = async () => {
     try {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const contract = new ethers.Contract(
@@ -38,68 +75,28 @@ const PropertyList = () => {
         RealEstateABI.abi,
         provider
       );
+      const adminAddress = await contract.admin();
+      console.log(`Admin address: ${adminAddress}`);
 
-      const propertyCount = await contract.propertyCount();
-      const properties = [];
-
-      for (let i = 1; i <= propertyCount; i++) {
-        const property = await contract.getProperty(i);
-        properties.push({
-          id: i,
-          name: property[0],
-          location: property[1],
-          price: ethers.formatEther(property[2]),
-          imageURL: property[3],
-          description: property[4],
-          owner: property[5],
-          isAvailable: property[6],
-        });
-      }
-
-      setProperties(properties);
-      setLoading(false);
+      setIsAdmin(adminAddress === connectedAddress);
     } catch (error) {
-      setError("Error fetching properties. Please try again later.");
-      console.error("Error fetching properties:", error);
-      setLoading(false);
+      console.error("Error checking admin status:", error);
     }
   };
 
-  useEffect(() => {
-    // connectWallet();
-    fetchProperties();
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="text-gray-700 text-xl">Loading properties...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="text-red-500 text-lg">{error}</div>
-      </div>
-    );
-  }
-
   return (
-    <div className="property-list px-4 py-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       {properties.length > 0 ? (
         properties.map((property) => (
           <PropertyCard
             key={property.id}
             property={property}
             connectedAddress={connectedAddress}
+            isAdmin={isAdmin}
           />
         ))
       ) : (
-        <div className="col-span-full text-center text-gray-700 text-xl">
-          No properties available at the moment.
-        </div>
+        <p>No properties found.</p>
       )}
     </div>
   );
