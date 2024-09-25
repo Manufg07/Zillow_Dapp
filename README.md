@@ -28,7 +28,7 @@ This is a decentralized real estate application built on Ethereum, where users c
   - Pinata and IPFS are used to store property images.
 - **Backend**: A Solidity smart contract deployed on Ethereum, handling the core functionalities (adding properties, managing property details).
 ## Demo Video
-<a href="https://youtu.be/-ejMrWSRrXs" target="_blank">
+<a href="https://youtu.be/gpGVPpgh3K4" target="_blank">
   <img align="center" alt="my dapp" src="zillow.png" width="250" height="150" />
 </a><br>
 
