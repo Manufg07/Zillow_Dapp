@@ -9,6 +9,7 @@ This is a decentralized real estate application built on Ethereum, where users c
 - **View Properties**: All properties added to the platform are displayed, including their name, location, price, and image.
 - **MetaMask Integration**: Users connect their Ethereum wallets through MetaMask to interact with the DApp.
 - **Decentralized Storage**: Property images are uploaded and stored on IPFS using Pinata.
+- **Buy Property**: Users can now purchase properties listed on the platform. The DApp handles the transfer of ownership on the Ethereum blockchain.
 
 ## Technologies Used
 
@@ -26,7 +27,8 @@ This is a decentralized real estate application built on Ethereum, where users c
   - Components like `AddProperty.js` and `PropertyList.js` handle the user interface and interaction with the blockchain.
   - Pinata and IPFS are used to store property images.
 - **Backend**: A Solidity smart contract deployed on Ethereum, handling the core functionalities (adding properties, managing property details).
-
+## Demo Video
+A demo video showcasing the features and usage of the platform, including adding and buying properties, can be found [here](#) (insert video link).
 ## Setup
 
 ### Prerequisites
