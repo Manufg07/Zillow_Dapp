@@ -28,7 +28,7 @@ This is a decentralized real estate application built on Ethereum, where users c
   - Pinata and IPFS are used to store property images.
 - **Backend**: A Solidity smart contract deployed on Ethereum, handling the core functionalities (adding properties, managing property details).
 ## Demo Video
-A demo video showcasing the features and usage of the platform, including adding and buying properties, can be found [here](#) (insert video link).
+A demo video showcasing the features and usage of the platform, including adding and buying properties, can be found [here](#) 
 ## Setup
 
 ### Prerequisites
