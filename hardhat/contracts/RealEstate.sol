@@ -7,7 +7,7 @@ contract RealEstate {
         string location;
         uint256 price;
         string imageURL;  
-        string description; 
+        string description;  // Check if the connected address is the admin
         address payable owner;
         bool isAvailable;
     }
@@ -20,13 +20,12 @@ contract RealEstate {
         admin = msg.sender;
     }
 
-    // Modifier to ensure only the owner can modify property details
     modifier onlyOwner(uint256 _propertyId) {
         require(properties[_propertyId].owner == msg.sender, "Only owner can modify property");
         _;
     }
 
-    // Events to log actions
+    // Events 
     event PropertyAdded(
         uint256 propertyId,
         string name,
@@ -42,7 +41,7 @@ contract RealEstate {
     event PropertyRemovedFromSale(uint256 propertyId);
     event PropertyModified(uint256 propertyId);
 
-    // Function to add a new property
+  
     function addProperty(
         string memory _name,
         string memory _location,
@@ -69,7 +68,7 @@ contract RealEstate {
         emit PropertyAdded(propertyCount, _name, _location, _price, _imageURL, _description, msg.sender);
     }
 
-    // Function to view property details
+  
     function getProperty(uint256 _propertyId)
         public
         view
@@ -95,21 +94,21 @@ contract RealEstate {
         );
     }
 
-    // Function to buy a property
+    
     function buyProperty(uint256 _propertyId) public payable {
         Property storage property = properties[_propertyId];
         require(property.isAvailable, "Property is not available for sale");
         require(msg.value >= property.price, "Not enough ETH to buy the property");
         require(msg.sender != property.owner, "Owner cannot buy their own property");
 
-        property.owner.transfer(msg.value); // Transfer Ether to the current owner
-        property.owner = payable(msg.sender); // Assign new owner
-        property.isAvailable = false; // Mark property as sold
+        property.owner.transfer(msg.value); 
+        property.owner = payable(msg.sender); 
+        property.isAvailable = false; 
 
         emit PropertyBought(_propertyId, msg.sender);
     }
 
-    // Function to list property for sale (owner-only)
+   
     function listPropertyForSale(uint256 _propertyId, uint256 _price) public onlyOwner(_propertyId) {
         Property storage property = properties[_propertyId];
         property.price = _price;
@@ -118,7 +117,6 @@ contract RealEstate {
         emit PropertyListedForSale(_propertyId, _price);
     }
 
-    // Function to remove property from sale (owner-only)
     function removePropertyFromSale(uint256 _propertyId) public onlyOwner(_propertyId) {
         Property storage property = properties[_propertyId];
         property.isAvailable = false;
@@ -126,7 +124,6 @@ contract RealEstate {
         emit PropertyRemovedFromSale(_propertyId);
     }
 
-    // Owner function to modify property details (onlyOwner modifier used here)
     function modifyPropertyDetails(
         uint256 _propertyId,
         string memory _name,

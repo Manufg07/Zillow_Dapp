@@ -4,7 +4,7 @@ import PropertyList from "./components/PropertyList";
 const App = () => {
   const [connectedAddress, setConnectedAddress] = useState("");
 
-  // Connect wallet function
+  
   const connectWallet = async () => {
     if (!window.ethereum) {
       alert("MetaMask is required to perform this action.");

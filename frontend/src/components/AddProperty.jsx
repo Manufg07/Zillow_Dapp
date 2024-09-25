@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import { uploadImage } from "../utils/ipfs";
 import RealEstateABI from "../scdata/RealEstate.json";
 import { toast } from "react-toastify";
-import { motion } from "framer-motion"; // Import framer-motion for animations
+import { motion } from "framer-motion";
 import "react-toastify/dist/ReactToastify.css";
 
 const CONTRACT_ADDRESS = "0xC6E9963CB77b5285F3A24Ecc14C566a2c19eF022";
@@ -56,14 +56,13 @@ const AddProperty = ({ closeModal }) => {
 
       toast.success("Property added successfully!");
 
-      // Clear form
       setName("");
       setLocation("");
       setPrice("");
       setDescription("");
       setImage(null);
 
-      closeModal(); // Close modal on success
+      closeModal(); 
     } catch (error) {
       console.error("Error adding property:", error);
       toast.error("Error adding property");

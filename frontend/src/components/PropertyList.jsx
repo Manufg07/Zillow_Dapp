@@ -61,7 +61,7 @@ const PropertyList = ({ connectedAddress }) => {
    }
  };
 
-  // Check if the connected address is the admin
+ 
   const checkIfAdmin = async () => {
     if (!window.ethereum) {
       console.error("MetaMask not detected");
