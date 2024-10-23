@@ -1,4 +1,5 @@
-## Project status : Improving the project ,.
+## Project status : Improving the project.
+
 # Real Estate DApp
 
 This is a decentralized real estate application built on Ethereum, where users can add and view properties. The DApp allows users to upload property details, including images, using Pinata for IPFS storage, and interact with the Ethereum blockchain via MetaMask. It is built using Solidity for smart contracts and React for the frontend.
